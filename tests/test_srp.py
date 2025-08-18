@@ -5,15 +5,17 @@ import asyncio
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from playwright.async_api import async_playwright
 from pages.srp import SRPPage
+from pages.product_page import ProductPage
 
-async def run(playwright):
-    browser = await playwright.firefox.launch(headless=False)
-    page = await browser.new_page()
-    srp_page = SRPPage(page)
+browser = None
+bug_count = 0
 
+async def bug001_item_filter(srp_page: SRPPage):
+    global bug_count
     await srp_page.goto()
     await srp_page.click_close_cookies()
     await srp_page.click_filter_10_items()
+    bug_count += 1
     await srp_page.verify_bug_popup()
     await srp_page.check_item_crash()
     await srp_page.check_bug001_text()
@@ -24,11 +26,26 @@ async def run(playwright):
     await srp_page.click_close_report()
     await srp_page.verify_more_bugs()
     await srp_page.click_close_more_bugs()
-    await browser.close()
+
+async def bug002_product_description(srp_page: SRPPage):
+    # pre-condition, on the SRP page
+    global bug_count
+    
+    product_page: ProductPage = await srp_page.click_item_dnk_yellow_shoes()
+    await product_page.click_hold_item_description()
+    bug_count += 1
+    await product_page.verify_bug002_popup(bug_count)
 
 async def main():
     async with async_playwright() as playwright:
-        await run(playwright)
+        global browser
+        browser = await playwright.firefox.launch(headless=False)
+        page = await browser.new_page()
+        active_page = SRPPage(page)
+        
+        await bug001_item_filter(active_page)
+        await bug002_product_description(active_page)
+        await browser.close()
 
 if __name__ == "__main__":
     asyncio.run(main())

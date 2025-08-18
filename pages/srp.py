@@ -1,4 +1,5 @@
 from playwright.async_api import Page, expect
+from pages.product_page import ProductPage
 
 class SRPPage:
     def __init__(self, page: Page):
@@ -42,3 +43,8 @@ class SRPPage:
 
     async def click_close_more_bugs(self):
         await self.page.get_by_role("button", name="Close").click()
+
+    async def click_item_dnk_yellow_shoes(self):
+        await self.page.locator("#ec_product_image_effect_4481370").click()
+        await self.page.wait_for_url("**/dnk-yellow-shoes/")
+        return ProductPage(self.page)
