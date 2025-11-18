@@ -1,0 +1,4 @@
+httpx
+playwright
+pytest
+pytest-playwright

@@ -14,14 +14,27 @@ class SRPPage:
     async def click_filter_10_items(self):
         await self.page.locator("a.what-we-offer-pagination-link:nth-child(2)").click()
 
-    async def verify_bug_popup(self):
+    async def verify_bug1_popup(self):
         await expect(self.page.get_by_text("What did you find out?")).to_be_visible(timeout=60000)
 
     async def check_item_crash(self):
         await self.page.locator('input[type="radio"][value="Crash"]').check()
 
+    async def check_item_visual(self):
+        await self.page.locator('input[type="radio"][value="Visual"]').check()
+
+    async def click_item(self, item_number: int):
+        xpath_expression = f'(//li[@class="ec_product_li"])[{item_number}]'
+        await self.page.locator(xpath_expression).click()
+
+    async def post_click_item(self):
+        return ProductPage(self.page)
+        
     async def check_bug001_text(self):
         await self.page.locator('input[type="radio"][value="The selected number of results is displayed according to the clicked buttons"]').check()
+
+    async def check_bug002_text(self):
+        await self.page.locator('input[type="radio"][value="The product image fills the box entirely just like all other product images"]').check()
 
     async def click_button_bug_report_submit(self):
         await self.page.get_by_role("button", name="Submit").click()
@@ -48,3 +61,19 @@ class SRPPage:
         await self.page.locator("#ec_product_image_effect_4481370").click()
         await self.page.wait_for_url("**/dnk-yellow-shoes/")
         return ProductPage(self.page)
+    
+    async def verify_bug_popup(self, bug_count: int, type_of_bug: str, text_of_bug: str):
+        await expect(self.page.get_by_role("heading", name="What did you find out?")).to_be_visible(timeout=30000)
+        await self.page.locator(f'input[type="radio"][value="{type_of_bug}"]').check()
+        await self.page.locator(f'input[type="radio"][value="{text_of_bug}"]').check()
+        await self.page.get_by_role("button", name="Submit").click()
+        await expect(self.page.get_by_text("Correct!")).to_be_visible()
+        await self.page.locator("#view-report").click()
+
+        if bug_count == 1:
+            bug_found_text = "#1 Awesome! You found a bug. Pretty easy right?"
+        else:
+            bug_found_text = f"You found {bug_count} bugs."
+                                                                                                                          
+        await expect(self.page.get_by_role("heading", name=bug_found_text)).to_be_visible(timeout=30000)    
+        await self.page.get_by_role("button", name="Close").click()
