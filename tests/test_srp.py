@@ -6,6 +6,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 from playwright.async_api import async_playwright
 from pages.srp import SRPPage
 from pages.product_page import ProductPage
+from pages.cart_page import CartPage
 
 browser = None
 bug_count:int = 0
@@ -44,6 +45,30 @@ async def bug010_product_description(product_page: ProductPage):
     bug_count += 1
     await product_page.verify_bug_popup(bug_count, "Content", "The text should be in English language")
 
+async def bug011_product_unavailable(product_page: ProductPage):
+    # pre-condition, on the Product Page with the "Silver Heart Braclet" sidebar ad.
+    global bug_count
+    await product_page.click_right_bar_ad_item_image()
+    await product_page.click_spinner()
+    bug_count += 1
+    await product_page.verify_bug_popup(bug_count, "Performance", "The product in the Hot Item section is properly loaded and displayed")
+    await product_page.click_right_bar_ad_item_link()
+
+async def bug012_product_material_unavailable(product_page: ProductPage):
+    global bug_count
+    await product_page.click_manufacturer()
+    bug_count += 1
+    await product_page.verify_bug_popup(bug_count, "Functional", "The manufacturer link shows an appropriate page")
+    await product_page.page.go_back()
+
+async def bug020_srp_open_empty_cart(product_page: ProductPage):
+    global bug_count
+    my_cart:CartPage = await product_page.open_cart()
+    bug_count += 1
+    await my_cart.click_no_items_button()
+    await my_cart.verify_bug_popup(bug_count, "Content", "The caption of the 'Return to Store' button is written with proper spacing between letters" )
+    await my_cart.click_no_items_button()
+
 async def main():
     async with async_playwright() as playwright:
         global browser
@@ -56,6 +81,9 @@ async def main():
         await bug001_item_filter(active_page)
         product_page = await bug002_srp_item_spacing(active_page)
         await bug010_product_description(product_page)
+        await bug011_product_unavailable(product_page)
+        await bug012_product_material_unavailable(product_page)
+        await bug020_srp_open_empty_cart(product_page)
         await browser.close()
 
 if __name__ == "__main__":

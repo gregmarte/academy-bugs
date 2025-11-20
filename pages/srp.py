@@ -70,10 +70,13 @@ class SRPPage:
         await expect(self.page.get_by_text("Correct!")).to_be_visible()
         await self.page.locator("#view-report").click()
 
-        if bug_count == 1:
-            bug_found_text = "#1 Awesome! You found a bug. Pretty easy right?"
-        else:
-            bug_found_text = f"You found {bug_count} bugs."
+        match bug_count:
+            case 1:
+                bug_found_text = "#1 Awesome! You found a bug. Pretty easy right?"
+            case 5:
+                bug_found_text = "#5 Great job! You found 5 bugs already, having fun?"
+            case _: 
+                bug_found_text = f"You found {bug_count} bugs."
                                                                                                                           
         await expect(self.page.get_by_role("heading", name=bug_found_text)).to_be_visible(timeout=30000)    
         await self.page.get_by_role("button", name="Close").click()
